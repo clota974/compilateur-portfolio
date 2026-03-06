@@ -16,7 +16,7 @@ impl CompilError {
 
     pub fn raise(self) {
         eprintln!("Compilation failed with :");
-        eprintln!("    Scan error at line {} -> {}", self.line, self.message);
+        eprintln!("    Scan error at line {}: -> {}", self.line, self.message);
         eprintln!("\n--- ABORTED ---");
         exit(1);
     }

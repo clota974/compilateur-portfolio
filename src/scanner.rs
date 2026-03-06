@@ -1,9 +1,5 @@
 use crate::errors::CompilError;
-use crate::token_types::TokenKind::{Identifier, Number};
 use crate::token_types::{PartialToken, Token, TokenKind};
-use core::str::Chars;
-use std::fmt::format;
-use std::iter::Peekable;
 use crate::lexeme_maker::LexemeMaker;
 use crate::scanbuf::ScanBuf;
 
@@ -37,11 +33,12 @@ impl Scanner {
                     self.newline();
                     self.next();
                     ScanResult::Skip
-                }
+                },
+                ';' => LexemeMaker::make_semicolon(self),
                 '"' => LexemeMaker::make_string_chain(self),
                 '0'..='9' => LexemeMaker::make_number(self),
                 'a'..='z' | 'A'..='Z' => LexemeMaker::make_alphanum(self),
-                '\r' | '\t' | ' ' | ';' => {
+                '\r' | '\t' | ' '  => {
                     self.next();
                     ScanResult::Skip
                 }
@@ -66,9 +63,10 @@ impl Scanner {
     }
 
     fn push_token(&mut self, p_token: PartialToken) {
+        let start_col = self.column - p_token.lexeme.chars().count();
         self.tokens.push(Token {
             line: self.line,
-            column: self.column,
+            column: start_col,
             kind: p_token.kind,
             lexeme: p_token.lexeme
         })

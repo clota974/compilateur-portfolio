@@ -1,20 +1,15 @@
+use crate::expr::Expr;
+use crate::token_types::TokenKind::{EOF, Identifier};
 use crate::token_types::{Token, TokenKind};
+use crate::stmt::{Return, Stmt, VarDecl};
 use std::iter::Peekable;
 use std::string::ToString;
 use std::vec::IntoIter;
-
-pub enum Expr {
-    Literal(f64),
-    Binary {
-        left: Option<Box<Expr>>,
-        operator: Token,
-        right: Option<Box<Expr>>,
-    },
-    Grouping(Box<Expr>),
-}
+use crate::ast::Ast;
 
 pub struct ParseError {
     line: usize,
+    column: usize,
     lexeme: String,
     message: String,
 }
@@ -22,6 +17,7 @@ impl ParseError {
     pub fn from_token(token: &Token, message: &str) -> Self {
         Self {
             line: token.line,
+            column: token.column,
             lexeme: token.lexeme.to_string(),
             message: message.to_string(),
         }
@@ -29,14 +25,14 @@ impl ParseError {
 }
 
 pub struct ParseResult {
-    pub ast: Option<Box<Expr>>,
+    pub ast: Ast,
     pub errors: Vec<ParseError>,
     pub had_errors: bool,
 }
 impl ParseResult {
-    fn new(expr: Option<Box<Expr>>) -> ParseResult {
+    fn new(ast: Ast) -> ParseResult {
         ParseResult {
-            ast: expr,
+            ast,
             errors: Vec::new(),
             had_errors: false,
         }
@@ -68,17 +64,27 @@ impl Parser {
         self.errors.push(err);
     }
 
+    fn next_if(&mut self, matches: TokenKind, message: &str) -> Option<Token> {
+        match self.next() {
+            t if t.kind == matches => Some(t),
+            t => {
+                self.add_error(ParseError::from_token(&t, message));
+                None
+            }
+        }
+    }
+
     pub fn print_errors(&self) {
-        if !self.had_error  {
+        if !self.had_error {
             eprintln!("Parsing completed successfully!");
-            return ;
+            return;
         }
         eprintln!("Following errors have been raised by parser : ");
 
         for err in self.errors.iter() {
             eprintln!(
-                "    ParseError -> Line {} -> Input : {} -> {}",
-                err.line, err.lexeme, err.message
+                "    ParseError -> Line {}:{} -> Input : {} -> {}",
+                err.line, err.column, err.lexeme, err.message
             )
         }
     }
@@ -105,22 +111,67 @@ impl Parser {
     }
 
     pub fn parse_ast(&mut self) -> ParseResult {
-        let result = self.parse_expr();
-        let token = self.next();
-        if token.kind != TokenKind::EOF {
-            self.add_error(ParseError::from_token(
-                &token,
-                "Unexpected token after expression",
-            ));
-        }
-
-        let mut result = ParseResult::new(result);
-        if self.had_error  {
+        let ast = self.parse_program();
+        let mut result = ParseResult::new(
+            Ast::new(ast)
+        );
+        if self.had_error {
             self.print_errors();
             println!("---> Parsing FAILED ");
             result.add_errors(&mut self.errors);
         }
         result
+    }
+
+    fn parse_program(&mut self) -> Vec<Stmt> {
+        let mut stmt: Vec<Stmt> = Vec::new();
+
+        while self.peek().kind != EOF {
+            let s = match self.parse_stmt() {
+                Some(s) => s,
+                _ => break,
+            };
+
+            self.next_if(TokenKind::SemiColon, "Expected semicolon after expression");
+            stmt.push(s);
+        }
+
+        let token = self.next();
+        if token.kind != EOF {
+            self.add_error(ParseError::from_token(
+                &token,
+                "Unexpected token after expression",
+            ));
+        };
+
+        stmt
+    }
+
+    fn parse_stmt(&mut self) -> Option<Stmt> {
+        let token = self.next();
+        match token.kind {
+            TokenKind::Let => self.parse_vardecl(),
+            TokenKind::Return => self.parse_return(),
+            _ => None,
+        }
+    }
+
+    fn parse_return(&mut self) -> Option<Stmt> {
+        let expr = self.parse_expr()?;
+        Some(Stmt::Return(Return {
+            expr: *expr,
+        }))
+    }
+
+    fn parse_vardecl(&mut self) -> Option<Stmt> {
+        let id_token = self.next_if(TokenKind::Identifier, "Expected identifier")?;
+        self.next_if(TokenKind::Equal, "Expected symbol = for assignment")?;
+        let init_value = self.parse_expr().unwrap();
+
+        Some(Stmt::VarDecl(VarDecl {
+            token: id_token,
+            init_value,
+        }))
     }
 
     fn parse_expr(&mut self) -> Option<Box<Expr>> {
@@ -158,6 +209,9 @@ impl Parser {
         let token = self.next();
 
         match token.kind {
+            Identifier => {
+              Some(Box::new(Expr::Identifier(token.lexeme)))
+            },
             TokenKind::Number => {
                 let number: Result<f64, _> = token.lexeme.parse();
                 match number {
@@ -209,7 +263,8 @@ pub fn print_if_ok(ast: &Option<Box<Expr>>) -> String {
 }
 
 pub fn print_expr(ast: &Expr) -> String {
-    let mut output = String::new();
+    panic!("not yet");
+    /*let mut output = String::new();
     let buf = match ast {
         Expr::Literal(number) => literal(number),
         Expr::Binary {
@@ -221,4 +276,6 @@ pub fn print_expr(ast: &Expr) -> String {
     };
     output.push_str(&buf);
     output
+    
+     */
 }

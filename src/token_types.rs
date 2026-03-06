@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
+    SemiColon,
     Identifier,
     StringChain,
     Number,
@@ -27,6 +28,7 @@ pub enum TokenKind {
     ParClose,
     BlockOpen,
     BlockClose,
+    Let,
     EOF,
 }
 

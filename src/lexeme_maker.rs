@@ -1,13 +1,19 @@
-
 use crate::scanbuf::ScanBuf;
 use crate::scanner::{ScanResult, Scanner};
 use crate::token_types::{PartialToken, TokenKind};
-use crate::token_types::TokenKind::Identifier;
+use crate::token_types::TokenKind::{Identifier, SemiColon};
 
 pub struct LexemeMaker{
 
 }
 impl LexemeMaker {
+    pub fn make_semicolon(scanner: &mut Scanner) -> ScanResult {
+       scanner.next();
+        ScanResult::Token(PartialToken {
+            kind: SemiColon,
+            lexeme: ";".to_string()
+        })
+    }
     pub fn make_string_chain(scanner: &mut Scanner) -> ScanResult {
         let mut buffer = ScanBuf::new();
         scanner.next(); // Consumes first quote
@@ -81,10 +87,10 @@ impl LexemeMaker {
         scanner.move_to_buffer(&mut buffer);
         let mut operator = buffer.to_str();
 
-        let next = scanner.peek().expect("Unexpected end of file");
+
+        let next = scanner.peek().unwrap();
         if next == '=' || next == '/' {
             operator = format!("{}{}", operator, next.to_string());
-            scanner.next();
         }
 
         if operator == "//" {
@@ -131,6 +137,7 @@ impl LexemeMaker {
             "false" => Some(TokenKind::False),
             "while" => Some(TokenKind::While),
             "for" => Some(TokenKind::For),
+            "let" => Some(TokenKind::Let),
             _ => None,
         }
     }
