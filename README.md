@@ -2,7 +2,7 @@
 
 J'avais avancé sur le projet, sans pouvoir aboutir à un commit qui fonctionne. 
 Il se trouve sur la branche WIP.
-Sur la branche WIP, le parsing d'une expresison telle que "let x = 3+5;" fonctionne.
+Sur la branche WIP, le parsing d'une expresison telle que `let x = 3+5;` fonctionne.
 Je suis en train d'implémenter l'évaluation d'une variable dans son environnement.
 
 # Exemple compilateur
@@ -23,6 +23,7 @@ cargo run -- input.txt
 
 ## Exemple
 Input : `36 * (4 + 5) * 2.4 + 6`
+
 Output : `(+ 6 (* (* 36 [ (+ 4 5) ]) 2.4))`
 
 On remarque que 4+5 est réalisé en premier, suivis des produits et enfin de l'addition.
