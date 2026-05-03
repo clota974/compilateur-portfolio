@@ -1,19 +1,20 @@
-mod errors;
-mod parser;
-mod scanner;
-mod token_types;
-mod lexeme_maker;
-mod scanbuf;
-mod expr;
-mod stmt;
-mod printer;
 mod ast;
-mod formatter;
-mod visitors;
-mod var_env;
+mod errors;
 mod executor;
+mod expr;
+mod formatter;
+mod lexeme_maker;
+mod parser;
+mod printer;
+mod scanbuf;
+mod scanner;
+mod stmt;
+mod token_types;
+mod var_env;
+mod visitors;
 
-use crate::parser::{generate_ast, print_if_ok};
+use crate::executor::Executor;
+use crate::parser::generate_ast;
 use crate::scanner::Scanner;
 use std::env;
 use std::fs;
@@ -42,14 +43,12 @@ fn main() {
     }
 
     println!("\n------ Parser -------\n");
-    let result = generate_ast(tokens);
-    result.ast.debug();
+    let parsing = generate_ast(tokens);
+    parsing.ast.debug();
 
-    /*
-    println!("\n------ Evaluation -------\n");
-    let output = &parsing.ast.unwrap().print();
-    println!("Output : {}", output);
-     */
+    println!("\n------ Executing program -------\n");
+    let output = Executor::new(parsing.ast).run();
+    println!("End of execution");
 }
 
 #[cfg(test)]
@@ -71,14 +70,18 @@ mod test {
         s
     }
 
+    fn exec_from_str(input: &str) -> String {
+        let parsing = ast_from(input);
+        Executor::new(parsing.ast).run()
+    }
+
     #[test]
     fn test_priority() {
-        return;
-        let o1 = print_ast_from("36 * 4 + (5 * 2.4 + 6)");
-        assert_eq!(o1, "(+ (* 36 4) [ (+ (* 5 2.4) 6) ])");
+        let o1 = print_ast_from("let x = 36 * 4 + (5 * 2.4 + 6);");
+        assert_eq!(o1, "decl(x, ((36 * 4) + ((5 * 2.4) + 6)))");
 
-        let o2 = print_ast_from("36 * 4 + 5 * 2.4 + 6");
-        assert_eq!(o2, "(+ (+ (* 36 4) (* 5 2.4)) 6)");
+        let o2 = print_ast_from("let y = 36 * 4 + 5 * 2.4 + 6");
+        assert_eq!(o2, "decl(y, (((36 * 4) + (5 * 2.4)) + 6))");
     }
 
     #[test]
@@ -95,5 +98,11 @@ mod test {
         }
 
         assert_eq!(nb_errors, 3);
+    }
+
+    #[test]
+    fn test_exec_maths() {
+        let output = exec_from_str("let x = 10; let y = 6 + 2; return y + 2*x;");
+        assert_eq!(output, "28");
     }
 }

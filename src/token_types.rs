@@ -51,7 +51,7 @@ impl PartialToken {
             kind: self.kind,
             lexeme: self.lexeme,
             line,
-            column
+            column,
         }
     }
 }

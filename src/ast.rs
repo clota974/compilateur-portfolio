@@ -1,16 +1,14 @@
 use crate::printer::Printer;
+use crate::stmt::Stmt;
 use crate::visitors::stmt_debugger::StmtDebugger;
 use crate::visitors::stmt_visitor::StmtVisitor;
-use crate::stmt::Stmt;
 
 pub struct Ast {
-    pub stmt: Vec<Stmt>
+    pub stmt: Vec<Stmt>,
 }
 impl Ast {
     pub fn new(stmt: Vec<Stmt>) -> Ast {
-        Ast {
-            stmt
-        }
+        Ast { stmt }
     }
     pub fn accept<V: StmtVisitor + Copy>(&self, visitor: V) -> Vec<V::Output> {
         let stmt_iter = self.stmt.iter();
@@ -28,8 +26,7 @@ impl Ast {
         }
     }
 
-    pub fn debug(self) {
+    pub fn debug(&self) {
         self.accept(Printer);
     }
-
 }

@@ -1,17 +1,15 @@
 use crate::scanbuf::ScanBuf;
 use crate::scanner::{ScanResult, Scanner};
-use crate::token_types::{PartialToken, TokenKind};
 use crate::token_types::TokenKind::{Identifier, SemiColon};
+use crate::token_types::{PartialToken, TokenKind};
 
-pub struct LexemeMaker{
-
-}
+pub struct LexemeMaker {}
 impl LexemeMaker {
     pub fn make_semicolon(scanner: &mut Scanner) -> ScanResult {
-       scanner.next();
+        scanner.next();
         ScanResult::Token(PartialToken {
             kind: SemiColon,
-            lexeme: ";".to_string()
+            lexeme: ";".to_string(),
         })
     }
     pub fn make_string_chain(scanner: &mut Scanner) -> ScanResult {
@@ -22,9 +20,7 @@ impl LexemeMaker {
             // Return if not an escaped quote
             if c == '"' && buffer.buffer.last().copied() != Some('\\') {
                 scanner.next();
-                return ScanResult::Token(
-                    buffer.to_token(TokenKind::StringChain)
-                )
+                return ScanResult::Token(buffer.to_token(TokenKind::StringChain));
             }
 
             if c == '\n' {
@@ -54,9 +50,7 @@ impl LexemeMaker {
             }
         }
 
-        ScanResult::Token(
-            buffer.to_token(TokenKind::Number)
-        )
+        ScanResult::Token(buffer.to_token(TokenKind::Number))
     }
 
     pub fn make_alphanum(scanner: &mut Scanner) -> ScanResult {
@@ -74,19 +68,16 @@ impl LexemeMaker {
         let literal: String = buffer.to_str();
         let kind = match LexemeMaker::match_keyword(&literal) {
             Some(keyword_kind) => keyword_kind,
-            _ => Identifier
+            _ => Identifier,
         };
 
-        ScanResult::Token(
-            buffer.to_token(kind)
-        )
+        ScanResult::Token(buffer.to_token(kind))
     }
 
     pub fn make_operator(scanner: &mut Scanner) -> ScanResult {
         let mut buffer = ScanBuf::new();
         scanner.move_to_buffer(&mut buffer);
         let mut operator = buffer.to_str();
-
 
         let next = scanner.peek().unwrap();
         if next == '=' || next == '/' {

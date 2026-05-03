@@ -1,11 +1,11 @@
+use crate::ast::Ast;
 use crate::expr::Expr;
+use crate::stmt::{Return, Stmt, VarDecl};
 use crate::token_types::TokenKind::{EOF, Identifier};
 use crate::token_types::{Token, TokenKind};
-use crate::stmt::{Return, Stmt, VarDecl};
 use std::iter::Peekable;
 use std::string::ToString;
 use std::vec::IntoIter;
-use crate::ast::Ast;
 
 pub struct ParseError {
     line: usize,
@@ -112,9 +112,7 @@ impl Parser {
 
     pub fn parse_ast(&mut self) -> ParseResult {
         let ast = self.parse_program();
-        let mut result = ParseResult::new(
-            Ast::new(ast)
-        );
+        let mut result = ParseResult::new(Ast::new(ast));
         if self.had_error {
             self.print_errors();
             println!("---> Parsing FAILED ");
@@ -158,9 +156,7 @@ impl Parser {
 
     fn parse_return(&mut self) -> Option<Stmt> {
         let expr = self.parse_expr()?;
-        Some(Stmt::Return(Return {
-            expr: *expr,
-        }))
+        Some(Stmt::Return(Return { expr: *expr }))
     }
 
     fn parse_vardecl(&mut self) -> Option<Stmt> {
@@ -170,7 +166,7 @@ impl Parser {
 
         Some(Stmt::VarDecl(VarDecl {
             token: id_token,
-            init_value,
+            init_value: *init_value,
         }))
     }
 
@@ -209,9 +205,7 @@ impl Parser {
         let token = self.next();
 
         match token.kind {
-            Identifier => {
-              Some(Box::new(Expr::Identifier(token.lexeme)))
-            },
+            Identifier => Some(Box::new(Expr::Identifier(token.lexeme))),
             TokenKind::Number => {
                 let number: Result<f64, _> = token.lexeme.parse();
                 match number {
@@ -242,40 +236,4 @@ impl Parser {
 pub fn generate_ast(tokens: Vec<Token>) -> ParseResult {
     let mut parser = Parser::new(tokens);
     parser.parse_ast()
-}
-
-fn literal(number: &f64) -> String {
-    format!("{}", number)
-}
-
-fn binary(left: &Option<Box<Expr>>, operator: &Token, right: &Option<Box<Expr>>) -> String {
-    let lprint = print_if_ok(left);
-    let rprint = print_if_ok(right);
-
-    format!("({} {} {})", operator.lexeme, lprint, rprint)
-}
-
-pub fn print_if_ok(ast: &Option<Box<Expr>>) -> String {
-    match ast {
-        Some(expr) => print_expr(expr),
-        _ => "<?>".to_string(),
-    }
-}
-
-pub fn print_expr(ast: &Expr) -> String {
-    panic!("not yet");
-    /*let mut output = String::new();
-    let buf = match ast {
-        Expr::Literal(number) => literal(number),
-        Expr::Binary {
-            left,
-            operator,
-            right,
-        } => binary(left, operator, right),
-        Expr::Grouping(grp) => format!("[ {} ]", print_expr(grp)),
-    };
-    output.push_str(&buf);
-    output
-    
-     */
 }

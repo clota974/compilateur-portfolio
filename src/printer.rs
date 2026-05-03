@@ -1,24 +1,47 @@
-use crate::executor::Executor;
-use crate::visitors::{ExprEvaluator, StmtVisitor};
+use crate::expr::Expr;
 use crate::stmt::{ExprStmt, Return, VarDecl};
+use crate::visitors::{ExprVisitor, StmtVisitor};
 
 #[derive(Copy, Clone)]
 pub struct Printer;
 
 impl StmtVisitor for Printer {
     type Output = ();
+
     fn visit_vardecl(&self, stmt: &VarDecl) {
-        let expr_value = stmt.init_value.accept(Executor);
-        println!("[vardecl] Declared {} to {}", stmt.token.lexeme, expr_value)
+        println!(
+            "[vardecl] {} = {}",
+            stmt.token.lexeme,
+            stmt.init_value.accept(self)
+        );
     }
-
     fn visit_expr(&self, stmt: &ExprStmt) {
-        let expr_value = stmt.expr.accept(Executor);
-        println!("[expr] Value : {}", expr_value);
+        println!("[expr] {}", stmt.expr.accept(self));
     }
-
     fn visit_return(&self, stmt: &Return) {
-        let expr_value = stmt.expr.accept(Executor);
-        println!("[return] Value : {}", expr_value);
+        println!("[return] {}", stmt.expr.accept(self));
+    }
+}
+
+impl ExprVisitor for Printer {
+    type Output = String;
+
+    fn visit_number(&self, value: f64) -> String {
+        value.to_string()
+    }
+    fn visit_identifier(&self, name: &str) -> String {
+        name.to_string()
+    }
+    fn visit_add(&self, left: &Expr, right: &Expr) -> String {
+        format!("({} + {})", left.accept(self), right.accept(self))
+    }
+    fn visit_mul(&self, left: &Expr, right: &Expr) -> String {
+        format!("({} * {})", left.accept(self), right.accept(self))
+    }
+    fn visit_sub(&self, left: &Expr, right: &Expr) -> String {
+        format!("({} - {})", left.accept(self), right.accept(self))
+    }
+    fn visit_div(&self, left: &Expr, right: &Expr) -> String {
+        format!("({} / {})", left.accept(self), right.accept(self))
     }
 }

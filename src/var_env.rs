@@ -4,14 +4,14 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub struct VarEnvError {
     name: String,
-    error: String
+    error: String,
 }
 
 impl VarEnvError {
     pub fn new(name: &str, error: &str) -> VarEnvError {
         VarEnvError {
             name: name.to_string(),
-            error: error.to_string()
+            error: error.to_string(),
         }
     }
 }
@@ -24,7 +24,7 @@ impl VarEnvOk {
     pub fn new(name: &str, value: VarValue) -> VarEnvOk {
         VarEnvOk {
             name: name.to_string(),
-            value
+            value,
         }
     }
 }
@@ -53,9 +53,7 @@ impl VarEnv {
     pub fn new() -> VarEnv {
         Self {
             values: HashMap::new(),
-            parent: None
+            parent: None,
         }
     }
-
-   
 }

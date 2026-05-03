@@ -1,12 +1,10 @@
+use crate::stmt::{ExprStmt, Return, VarDecl};
 use crate::visitors::expr_debugger::ExprDebugger;
 use crate::visitors::stmt_visitor::StmtVisitor;
-use crate::stmt::{ExprStmt, Return, VarDecl};
-use crate::var_env::VarEnv;
 
-pub struct StmtDebugger<'a> {
-    env: &'a VarEnv,
-}
-impl StmtVisitor for StmtDebugger<'_> {
+#[derive(Copy, Clone)]
+pub struct StmtDebugger;
+impl StmtVisitor for StmtDebugger {
     type Output = String;
     fn visit_vardecl(&self, stmt: &VarDecl) -> String {
         let lexeme = &stmt.token.lexeme;

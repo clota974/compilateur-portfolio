@@ -1,8 +1,9 @@
 use crate::executor::Executor;
-use crate::visitors::ExprVisitor;
 use crate::token_types::{Token, TokenKind};
 use crate::var_env::VarEnv;
+use crate::visitors::ExprVisitor;
 
+#[derive(Clone)]
 pub enum Expr {
     Literal(f64),
     Identifier(String),
@@ -26,21 +27,13 @@ impl Expr {
                 let left = left.as_deref().unwrap();
                 let right = right.as_deref().unwrap();
                 match operator.kind {
-                    TokenKind::Plus => {
-                        visitor.visit_add(left, right)
-                    }
-                    TokenKind::Minus => {
-                        visitor.visit_sub(left, right)
-                    }
-                    TokenKind::Asterisk => {
-                        visitor.visit_mul(left, right)
-                    }
-                    TokenKind::Slash => {
-                        visitor.visit_div(left, right)
-                    }
+                    TokenKind::Plus => visitor.visit_add(left, right),
+                    TokenKind::Minus => visitor.visit_sub(left, right),
+                    TokenKind::Asterisk => visitor.visit_mul(left, right),
+                    TokenKind::Slash => visitor.visit_div(left, right),
                     _ => panic!("Unknown operator"),
                 }
-            },
+            }
             Expr::Grouping(inner) => inner.accept(visitor),
             Expr::Identifier(i) => visitor.visit_identifier(i),
         }

@@ -1,22 +1,22 @@
-use std::collections::HashMap;
-use crate::visitors::ExprVisitor;
 use crate::expr::Expr;
-use crate::var_env::{VarEnv, VarEnvOk, VarValue};
 use crate::var_env::VarValue::Number;
+use crate::var_env::{VarEnv, VarEnvOk, VarValue};
+use crate::visitors::ExprVisitor;
+use std::collections::HashMap;
 
 pub fn accept_for_number(ctx: &ExprEvaluator, left: &Expr) -> f64 {
     let value = left.accept(ctx);
     match value {
         Number(v) => v,
-        _ => panic!("Expected a number")
+        _ => panic!("Expected a number"),
     }
 }
 
-pub struct ExprEvaluator {
-    pub values: HashMap<String, VarValue>
+pub struct ExprEvaluator<'a> {
+    pub values: &'a HashMap<String, VarValue>,
 }
 
-impl ExprVisitor for ExprEvaluator {
+impl ExprVisitor for ExprEvaluator<'_> {
     type Output = VarValue;
 
     fn visit_number(&self, value: f64) -> Self::Output {
@@ -26,7 +26,6 @@ impl ExprVisitor for ExprEvaluator {
         let result = self.values.get(name).unwrap();
         result.to_owned()
     }
-
 
     fn visit_add(&self, left: &Expr, right: &Expr) -> Self::Output {
         let l = accept_for_number(self, left);

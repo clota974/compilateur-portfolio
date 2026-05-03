@@ -1,7 +1,7 @@
 use crate::errors::CompilError;
-use crate::token_types::{PartialToken, Token, TokenKind};
 use crate::lexeme_maker::LexemeMaker;
 use crate::scanbuf::ScanBuf;
+use crate::token_types::{PartialToken, Token, TokenKind};
 
 pub enum ScanResult {
     Skip,
@@ -19,7 +19,13 @@ pub struct Scanner {
 
 impl Scanner {
     pub fn new(input: &str) -> Self {
-        Scanner { chars: input.chars().collect(), pos: 0, line: 0, column: 0, tokens: Vec::new() }
+        Scanner {
+            chars: input.chars().collect(),
+            pos: 0,
+            line: 0,
+            column: 0,
+            tokens: Vec::new(),
+        }
     }
 
     pub fn tokenize(&mut self) -> Vec<Token> {
@@ -33,12 +39,12 @@ impl Scanner {
                     self.newline();
                     self.next();
                     ScanResult::Skip
-                },
+                }
                 ';' => LexemeMaker::make_semicolon(self),
                 '"' => LexemeMaker::make_string_chain(self),
                 '0'..='9' => LexemeMaker::make_number(self),
                 'a'..='z' | 'A'..='Z' => LexemeMaker::make_alphanum(self),
-                '\r' | '\t' | ' '  => {
+                '\r' | '\t' | ' ' => {
                     self.next();
                     ScanResult::Skip
                 }
@@ -68,7 +74,7 @@ impl Scanner {
             line: self.line,
             column: start_col,
             kind: p_token.kind,
-            lexeme: p_token.lexeme
+            lexeme: p_token.lexeme,
         })
     }
 
@@ -83,14 +89,17 @@ impl Scanner {
 
     pub fn next(&mut self) -> &mut Self {
         let c = self.peek();
-        if c.is_some() { self.pos += 1; self.column += 1; }
+        if c.is_some() {
+            self.pos += 1;
+            self.column += 1;
+        }
         self
     }
 
     pub fn next_if(&mut self, matches: &str) -> Option<char> {
         let c = match self.peek() {
             Some(c) => c,
-            _ => return None
+            _ => return None,
         };
         if c.to_string() == matches {
             self.next().peek()
@@ -104,9 +113,9 @@ impl Scanner {
         while let Some(c) = self.next().peek() {
             buffer.push(c);
             if (c == matches) {
-                return buffer.to_str()
+                return buffer.to_str();
             }
-        };
+        }
         unreachable!();
     }
 

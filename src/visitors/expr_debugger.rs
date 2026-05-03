@@ -1,7 +1,7 @@
-use std::fmt::format;
 use crate::expr::Expr;
 use crate::var_env::{VarEnv, VarEnvResult};
 use crate::visitors::expr_visitor::ExprVisitor;
+use std::fmt::format;
 
 #[derive(Copy, Clone)]
 pub struct ExprDebugger;
@@ -12,7 +12,7 @@ impl ExprVisitor for ExprDebugger {
         format!("{}", value)
     }
 
-    fn visit_identifier(&mut self, name: &str) -> Self::Output {
+    fn visit_identifier(&self, name: &str) -> Self::Output {
         format!("id({})", name)
     }
 

@@ -1,7 +1,7 @@
 use crate::token_types::{PartialToken, TokenKind};
 
 pub struct ScanBuf {
-    pub buffer: Vec<char>
+    pub buffer: Vec<char>,
 }
 
 impl ScanBuf {
@@ -19,9 +19,6 @@ impl ScanBuf {
 
     pub fn to_token(&self, kind: TokenKind) -> PartialToken {
         let lexeme = self.to_str();
-        PartialToken {
-            kind,
-            lexeme
-        }
+        PartialToken { kind, lexeme }
     }
 }
